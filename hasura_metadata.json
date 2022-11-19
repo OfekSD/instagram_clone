@@ -1,0 +1,534 @@
+{
+  "resource_version": 185,
+  "metadata": {
+    "version": 3,
+    "sources": [
+      {
+        "name": "default",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "comments",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "commenter",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "user": "id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "users",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "post",
+                    "text",
+                    "user"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "post",
+                    "text",
+                    "user"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "backend_only": false,
+                  "filter": {
+                    "user": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "liked_posts",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "user_id": "id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "users",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "post"
+                  ],
+                  "filter": {
+                    "user_id": {
+                      "_is_null": true
+                    }
+                  }
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "post",
+                    "user_id"
+                  ],
+                  "filter": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "likes",
+              "schema": "public"
+            },
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "liker": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "post"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "liker",
+                    "post"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "liker",
+                    "post"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "backend_only": false,
+                  "filter": {
+                    "liker": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "posts",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "is_liked",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "post"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "liked_posts",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "like",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "post",
+                    "table": {
+                      "name": "likes",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "poster"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "comments",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "post",
+                    "table": {
+                      "name": "comments",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "computed_fields": [
+              {
+                "name": "like_count",
+                "definition": {
+                  "function": {
+                    "name": "post_likes_count",
+                    "schema": "public"
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "poster": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "set": {
+                    "poster": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "created_at",
+                    "description",
+                    "image"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "description",
+                    "id",
+                    "image"
+                  ],
+                  "computed_fields": [
+                    "like_count"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "description",
+                    "id",
+                    "image"
+                  ],
+                  "computed_fields": [
+                    "like_count"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "backend_only": false,
+                  "filter": {
+                    "poster": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "likes",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "liker",
+                    "table": {
+                      "name": "likes",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "posts",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "poster"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "posts",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "bio",
+                    "email",
+                    "password",
+                    "username"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "bio",
+                    "id",
+                    "is_public",
+                    "username"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgres://postgres:postgrespassword@postgres:5432/postgres",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        },
+        "customization": {
+          "naming_convention": "hasura-default"
+        }
+      }
+    ],
+    "query_collections": [
+      {
+        "name": "allowed-queries",
+        "definition": {
+          "queries": [
+            {
+              "name": "CreatePost",
+              "query": "mutation CreatePost($description: String, $image: String) {\n  insert_posts_one(object: {description: $description, image: $image}) {\n    description\n    image\n    user {\n      username\n    }\n    created_at\n  }\n}"
+            },
+            {
+              "name": "GetLikedPosts",
+              "query": "query MyQuery {\n  liked_posts {\n    post\n  }\n}"
+            },
+            {
+              "name": "LikePost",
+              "query": "mutation LikePost($post: uuid = \"\") {\n  insert_likes_one(object: {post: $post}) {\n    post\n  }\n}"
+            },
+            {
+              "name": "UnlikePost",
+              "query": "mutation UnlikePost($post: uuid = \"\") {\n  delete_likes(where: {post: {_eq: $post}}) {\n    affected_rows\n  }\n}"
+            },
+            {
+              "name": "GetAllPosts",
+              "query": "query GetPosts {\r\n  posts(order_by: {created_at: desc}) {\r\n    id\r\n    like_count\r\n    created_at\r\n    description\r\n    user {\r\n      username\r\n    }\r\n    comments {\r\n      text\r\n      commenter {\r\n        username\r\n      }\r\n    }\r\n    is_liked {\r\n      post\r\n    }\r\n    image\r\n  }\r\n}"
+            },
+            {
+              "name": "CreateComment",
+              "query": "mutation CommentPost($post: uuid = \"\", $text: String = \"\") {\r\n  insert_comments_one(object: {post: $post, text: $text}) {\r\n    text\r\n    created_at\r\n    commenter {\r\n      username\r\n    }\r\n  }\r\n}"
+            },
+            {
+              "name": "GetUserPosts",
+              "query": "query GetPosts($username: String = \"\") {\r\n  posts(order_by: {created_at: desc}, where: {user: {username: {_ilike: $username}}}) {\r\n    id\r\n    like_count\r\n    image\r\n    created_at\r\n    description\r\n    user {\r\n      username\r\n    }\r\n    is_liked {\r\n      post\r\n    }\r\n    comments {\r\n      text\r\n      commenter {\r\n        username\r\n      }\r\n    }\r\n  }\r\n}"
+            }
+          ]
+        }
+      }
+    ],
+    "allowlist": [
+      {
+        "collection": "allowed-queries",
+        "scope": {
+          "global": true
+        }
+      }
+    ],
+    "rest_endpoints": [
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "CreateComment"
+          }
+        },
+        "methods": [
+          "POST"
+        ],
+        "name": "CreateComment",
+        "url": "comment"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "GetLikedPosts"
+          }
+        },
+        "methods": [
+          "GET"
+        ],
+        "name": "GetLikedPosts",
+        "url": "like"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "LikePost"
+          }
+        },
+        "methods": [
+          "POST"
+        ],
+        "name": "LikePost",
+        "url": "like"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "UnlikePost"
+          }
+        },
+        "methods": [
+          "DELETE"
+        ],
+        "name": "UnlikePost",
+        "url": "like"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "CreatePost"
+          }
+        },
+        "methods": [
+          "POST"
+        ],
+        "name": "CreatePost",
+        "url": "post"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "GetAllPosts"
+          }
+        },
+        "methods": [
+          "GET"
+        ],
+        "name": "GetAllPosts",
+        "url": "post"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "GetUserPosts"
+          }
+        },
+        "methods": [
+          "GET"
+        ],
+        "name": "GetUserPosts",
+        "url": "post/:username"
+      }
+    ]
+  }
+}

@@ -57,10 +57,7 @@
         fileInput.value = null
         description = ''
         closing.click()
-        $posts = await getPosts({headers:{
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${$jwt}`
-        }})
+        $posts = await getPosts($jwt)
         
         
     }
